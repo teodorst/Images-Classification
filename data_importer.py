@@ -7,10 +7,10 @@ import sys
 
 BATCH_NO = 5
 
-FIRST_TRAIN_IMAGES_FILE = 'first_set_train_images'
-FIRST_TRAIN_CLASSES_FILE = 'first_set_test_classes'
-FIRST_TEST_IMAGES_FILE = 'first_set_test_classes'
-FIRST_TEST_CLASSES_FILE = 'first_set_test_classes'
+FIRST_TRAIN_IMAGES_FILE = 'first_set_train_images.npy'
+FIRST_TRAIN_CLASSES_FILE = 'first_set_train_classes.npy'
+FIRST_TEST_IMAGES_FILE = 'first_set_test_images.npy'
+FIRST_TEST_CLASSES_FILE = 'first_set_test_classes.npy'
 
 SECOND_TRAIN_IMAGES_FILE = 'second_set_train_images.npy'
 SECOND_TRAIN_CLASSES_FILE = 'second_set_train_classes.npy'
@@ -49,7 +49,7 @@ def import_image(index, images, tags):
     tag = tags[tag_index]
     one_of_k = np.empty((10, 1), dtype='int8')
     one_of_k[tag_index] = 1
-
+    image = np.array(image, dtype='float64')
     return image, tag, one_of_k
 
 
@@ -60,23 +60,24 @@ def import_first_dataset():
     test_one_of_ks = []
     dataset = {}
 
-    metadates = unpickle(path.join(FIRST_SET_FOLDER, METADATES_FILE))
+    metadates = unpickle(os.path.join(FIRST_SET_FOLDER, METADATES_FILE))
     dataset['classes'] = metadates['label_names']
     dataset['items_on_class'] = metadates['num_cases_per_batch']
+    if (not os.path.exists(FIRST_TRAIN_IMAGES_FILE)) or (not os.path.exists(FIRST_TRAIN_CLASSES_FILE)) or (not os.path.exists(FIRST_TEST_IMAGES_FILE)) or (not os.path.exists(FIRST_TEST_CLASSES_FILE)):
 
-    for batch_no in xrange(1, BATCH_NO+1):
+        for batch_no in xrange(1, BATCH_NO+1):
 
-        dates = unpickle(path.join(FIRST_SET_FOLDER, 'data_batch_' + str(batch_no)))
-        dates_len = len(dates['labels'])
+            dates = unpickle(os.path.join(FIRST_SET_FOLDER, 'data_batch_' + str(batch_no)))
+            dates_len = len(dates['labels'])
 
-        for i in xrange(dates_len):
-            img, tag, one_of_k = import_image(i, dates, dataset['classes'])
-            print "Read image %d from batch %d" % (batch_no, i)
-            train_images.append(img)
-            train_one_of_ks.append(one_of_k)
-            train_tags.append(tag)
+            for i in xrange(dates_len):
+                img, tag, one_of_k = import_image(i, dates, dataset['classes'])
+                print "Read image %d from batch %d" % (i, batch_no)
+                train_images.append(img)
+                train_one_of_ks.append(one_of_k)
+                # train_tags.append(tag)
 
-        dates = unpickle(path.join(FIRST_SET_FOLDER, 'test_batch'))
+        dates = unpickle(os.path.join(FIRST_SET_FOLDER, 'test_batch'))
         dates_len = len(dates['labels'])
 
         for i in xrange(dates_len):
@@ -85,7 +86,17 @@ def import_first_dataset():
             test_one_of_ks.append(one_of_k)
             # test_tags.append(tag)
 
+        train_images = np.array(train_images)
+        train_one_of_ks = np.array(train_one_of_ks)
+        test_images = np.array(test_images)
+        test_one_of_ks = np.array(test_one_of_ks)
 
+        save_data(train_images, train_one_of_ks, test_images, test_one_of_ks, 1)
+
+    else:
+        train_images, train_one_of_ks, test_images, test_one_of_ks = load_data(1)
+
+    print train_one_of_ks
     images_standardization(train_images, test_images)
 
     dataset['train_images'] = train_images
@@ -208,5 +219,5 @@ def load_image(image_path):
     return Image.open(image_path)
 
 if __name__ == '__main__':
-    # import_first_set()
-    import_second_dataset()
+    import_first_dataset()
+    # import_second_dataset()
