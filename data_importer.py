@@ -1,9 +1,8 @@
 import cPickle
-# from os import path, isdir
 import os
 import numpy as np
 from PIL import Image
-from random import choice
+import sys
 
 
 BATCH_NO = 5
@@ -107,12 +106,6 @@ def import_second_dataset():
     test_tags = []
     dataset = {}
 
-    print SECOND_TRAIN_IMAGES_FILE
-    print not os.path.exists(SECOND_TRAIN_IMAGES_FILE)
-
-    print (not os.path.exists(SECOND_TRAIN_CLASSES_FILE))
-    print (not os.path.exists(SECOND_TEST_IMAGES_FILE))
-    print (not os.path.exists(SECOND_TEST_CLASSES_FILE))
     if (not os.path.exists(SECOND_TRAIN_IMAGES_FILE)) or (not os.path.exists(SECOND_TRAIN_CLASSES_FILE)) or (not os.path.exists(SECOND_TEST_IMAGES_FILE)) or (not os.path.exists(SECOND_TEST_CLASSES_FILE)):
 
         for subfolder in SECOND_DATASET_SUBFOLDERS:
@@ -145,21 +138,10 @@ def import_second_dataset():
         test_one_of_ks = np.array(test_images)
 
         # Write to files
-        np.save(file=SECOND_TRAIN_IMAGES_FILE, arr=train_images)
-        np.save(file=SECOND_TRAIN_CLASSES_FILE, arr=train_one_of_ks)
-        np.save(file=SECOND_TEST_IMAGES_FILE, arr=test_images)
-        np.save(file=SECOND_TEST_CLASSES_FILE, arr=test_one_of_ks)
-
+        save_data(train_images, train_one_of_ks, test_images, test_one_of_ks, 2)
     else:
-        train_images = np.load(file=SECOND_TRAIN_IMAGES_FILE)
-        train_one_of_ks = np.load(file=SECOND_TRAIN_CLASSES_FILE)
-        test_images = np.load(file=SECOND_TEST_IMAGES_FILE)
-        test_one_of_ks = np.load(file=SECOND_TEST_CLASSES_FILE)
+        train_images, train_one_of_ks, test_images, test_one_of_ks = load_data(2)
 
-
-    # Image.fromarray(choice(train_images), 'RGB').show()
-    # Image.fromarray(choice(train_images), 'RGB').show()
-    # Image.fromarray(choice(train_images), 'RGB').show()
     images_standardization(train_images, test_images)
 
     dataset['train_images'] = train_images
@@ -174,15 +156,44 @@ def image_resize(image):
     image_array = np.array(resized_img, dtype='float64')
     return image_array
 
-def load_image(image_path):
-    return Image.open(image_path)
+
+def load_data(dataset_no=1):
+    if dataset_no == 1:
+        train_images = np.load(file=FIRST_TRAIN_IMAGES_FILE)
+        train_one_of_ks = np.load(file=FIRST_TRAIN_CLASSES_FILE)
+        test_images = np.load(file=FIRST_TEST_IMAGES_FILE)
+        test_one_of_ks = np.load(file=FIRST_TEST_CLASSES_FILE)
+    elif dataset_no == 2:
+        train_images = np.load(file=SECOND_TRAIN_IMAGES_FILE)
+        train_one_of_ks = np.load(file=SECOND_TRAIN_CLASSES_FILE)
+        test_images = np.load(file=SECOND_TEST_IMAGES_FILE)
+        test_one_of_ks = np.load(file=SECOND_TEST_CLASSES_FILE)
+    else:
+        print "Wrong dataset number"
+        sys.exit(1)
+
+    return train_images, train_one_of_ks, test_images, test_one_of_ks
+
+def save_data(train_images, train_one_of_ks, test_images, test_one_of_ks, dataset_no=1):
+    if dataset_no == 1:
+        np.save(file=FIRST_TRAIN_IMAGES_FILE, arr=train_images)
+        np.save(file=FIRST_TRAIN_CLASSES_FILE, arr=train_one_of_ks)
+        np.save(file=FIRST_TEST_IMAGES_FILE, arr=test_images)
+        np.save(file=FIRST_TEST_CLASSES_FILE, arr=test_one_of_ks)
+    elif dataset_no == 2:
+        np.save(file=SECOND_TRAIN_IMAGES_FILE, arr=train_images)
+        np.save(file=SECOND_TRAIN_CLASSES_FILE, arr=train_one_of_ks)
+        np.save(file=SECOND_TEST_IMAGES_FILE, arr=test_images)
+        np.save(file=SECOND_TEST_CLASSES_FILE, arr=test_one_of_ks)
+    else:
+        print "Wrong dataset number"
+        sys.exit(1)
+
 
 def images_standardization(train_images, test_images):
-    print train_images
     avg = np.mean(train_images)
     dev = np.std(train_images)
-    print avg
-    print dev
+    print avg, dev
     train_images -= avg
     train_images /= dev
     test_images -= avg
@@ -193,6 +204,8 @@ def display_image(image):
     img_display = Image.fromarray(image)
     img_display.show()
 
+def load_image(image_path):
+    return Image.open(image_path)
 
 if __name__ == '__main__':
     # import_first_set()
