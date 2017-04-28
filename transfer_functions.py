@@ -1,11 +1,11 @@
-
+import numpy as np
 
 def identity(x, derivate=False):
     return x if not derivate else np.ones(x.shape)
 
 
 def logistic(x, derivate=False):
-    return 1 / (1 + np.e ** (-x)) if not derivate else x * (1 - x)
+    return 1 / (1 + np.exp(-x)) if not derivate else np.multiply(x, (1 - x))
 
 
 def hyperbolic_tangent(x, derivate=False):
@@ -13,7 +13,7 @@ def hyperbolic_tangent(x, derivate=False):
 
 
 def tanh(x, derivate=False):
-    return (np.exp(x) - np.exp(-x)) / (np.exp(x) + np.exp(-x)) if not derivate else 1 - np.power(tanh(x), 2)
+    return np.tanh(x) if not derivate else 1 - x ** 2
 
 def relu(x, derivate=False):
     # TODO 2

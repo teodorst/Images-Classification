@@ -1,5 +1,14 @@
-from data_importer import import_first_dataset, import_second_dataset
+import numpy as np                                  # Needed to work with arrays
+import random
+from argparse import ArgumentParser
 
+from data_importer import import_first_dataset, import_second_dataset
+from liniarize_layer import LinearizeLayer, LinearizeLayerReverse
+from tanh_layer import Tanh
+from softmax_layer import SoftMax
+from feed_forward import FeedForward
+from fullyconnected_layer import FullyConnected
+from transfer_functions import identity, logistic
 
 def eval_nn(nn, imgs, labels, maximum = 0):
     # Compute the confusion matrix
@@ -15,22 +24,35 @@ def eval_nn(nn, imgs, labels, maximum = 0):
 
     return float(correct_no) / float(how_many), confusion_matrix / float(how_many)
 
-def train_nn(nn, dataset, args, ):
+def train_nn(nn, dataset, args):
     contor = 0
-    for i in np.random.permutation(dataset["train_images"])[:args['total_train']]
+    train_len = len(dataset['train_images'])
+    print 'TRain len', train_len
+    for i in xrange(args.total_train):
+        img_index = random.randint(0, train_len-1)
         contor += 1
+        inputs = dataset["train_images"][img_index]
+        targets = dataset["train_one_of_ks"][img_index]
 
-        inputs = dataset["train_images"][i]
-        label = dataset["one_of_ks"][i]
         outputs = nn.forward(inputs)
+        # print 'After forward'
+        targets = np.reshape(targets, (10, 1))
+
         errors = outputs - targets
+        # print outputs.shape
+        # print targets.shape
+        # print errors
+        # print errors.shape
+
+        # print 'Before backward'
+
         nn.backward(inputs, errors)
         nn.update_parameters(args.learning_rate)
 
         # Evaluate the network
-        if cnt % args.eval_every == 0:
-            test_acc, test_cm = eval_nn(nn, data["test_images"], data["test_classes"])
-            train_acc, train_cm = eval_nn(nn, data["train_images"], data["train_classes"], 5000)
+        if contor % args.eval_every == 0:
+            test_acc, test_cm = eval_nn(nn, dataset["test_images"], dataset["test_one_of_ks"])
+            train_acc, train_cm = eval_nn(nn, dataset["train_images"], dataset["test_one_of_ks"], 1000)
             print("Train acc: %2.6f ; Test acc: %2.6f" % (train_acc, test_acc))
 
 if __name__ == "__main__":
@@ -48,8 +70,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     input_size = (32, 32, 3)
-    dataset = import_first_dataset() if args['dataset'] == 1 else import_second_dataset()
-    nn = FeedForward([Liniarized(input_size), FullyConnected(300), TanH(), FullyConnected(100), SoftMax])
 
-    train_nn(nn, args, dataset)
+    dataset = import_first_dataset() if args.dataset == 1 else import_second_dataset()
+    # nn = FeedForward([LinearizeLayer(32, 32, 3), FullyConnected(32*32*3, 300, identity), Tanh(), FullyConnected(300, 10, identity), SoftMax()])
+
+    nn = FeedForward([LinearizeLayer(32, 32, 3), FullyConnected(32*32*3, 300, logistic), Tanh(), FullyConnected(300, 10, logistic), SoftMax()])
+
+    # print nn.to_string()
+
+    train_nn(nn, dataset, args)
 

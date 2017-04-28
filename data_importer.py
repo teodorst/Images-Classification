@@ -47,7 +47,7 @@ def import_image(index, images, tags):
             image[row][col][2] = image_pixels[images_pixels_pos+BLUE_POS]
 
     tag = tags[tag_index]
-    one_of_k = np.empty((10, 1), dtype='int8')
+    one_of_k = np.zeros((10, 1))
     one_of_k[tag_index] = 1
     image = np.array(image, dtype='float64')
     return image, tag, one_of_k
@@ -72,7 +72,7 @@ def import_first_dataset():
 
             for i in xrange(dates_len):
                 img, tag, one_of_k = import_image(i, dates, dataset['classes'])
-                print "Read image %d from batch %d" % (i, batch_no)
+                # print "Read image %d from batch %d" % (i, batch_no)
                 train_images.append(img)
                 train_one_of_ks.append(one_of_k)
                 # train_tags.append(tag)
