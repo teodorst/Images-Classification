@@ -67,6 +67,9 @@ class FullyConnected(LayerInterface):
     def update_parameters(self, learning_rate):
         self.biases -= self.g_biases * learning_rate
         self.weights -= self.g_weights * learning_rate
+        # Gradients
+        self.g_weights = np.zeros((self.outputs_no, self.inputs_no))
+        self.g_biases = np.zeros((self.outputs_no, 1))
 
     def to_string(self):
         return "[FC (%s -> %s)]" % (self.inputs_no, self.outputs_no)

@@ -10,10 +10,11 @@ class SoftMax(LayerInterface):
         pass
 
     def forward(self, x):
-        # exk = np.exp(inputs)
-        # exk_sum = np.sum(exk)
-        ex = np.exp(x - np.max(x))
-        self.outputs = ex / ex.sum()
+        exk = np.exp(x)
+        exk_sum = np.sum(exk)
+        self.outputs = exk / exk_sum
+        # ex = np.exp(x - np.max(x))
+        # self.outputs = ex / ex.sum()
         # print 'Softmax Forward'
         # print self.outputs
         # sleep(1)
