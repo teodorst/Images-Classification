@@ -9,14 +9,14 @@ class ReluLayer(LayerInterface):
         pass
 
     def forward(self, inputs):
-
         # TODO 2
-        return relu(inputs)
+        self.outputs = relu(inputs)
+
+        return self.outputs
 
     def backward(self, inputs, output_errors):
-
         # TODO 2
-        return output_errors * relu(output_errors, True)
+        return output_errors * relu(inputs, True)
 
     def to_string(self):
         return "[Relu]"

@@ -13,20 +13,12 @@ class SoftMax(LayerInterface):
         exk = np.exp(x)
         exk_sum = np.sum(exk)
         self.outputs = exk / exk_sum
-        # ex = np.exp(x - np.max(x))
-        # self.outputs = ex / ex.sum()
-        # print 'Softmax Forward'
-        # print self.outputs
-        # sleep(1)
         return self.outputs
 
     def backward(self, inputs, output_errors):
         Z  = np.sum(np.multiply(output_errors, self.outputs))
-        # print output_errors.shape
         deltax = np.multiply(self.outputs, output_errors - Z)
-        # print deltax.shape
         return deltax
-        # return inputs * (output_errors - inputs * output_errors)
 
 
     def update_parameters(self, learning_rate):

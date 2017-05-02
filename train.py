@@ -8,7 +8,12 @@ from tanh_layer import Tanh
 from softmax_layer import SoftMax
 from feed_forward import FeedForward
 from fullyconnected_layer import FullyConnected
-from transfer_functions import identity, logistic
+from convolution_layer import ConvolutionalLayer
+from relu_layer import ReluLayer
+from maxpooling_layer import MaxPoolingLayer
+
+from transfer_functions import identity, logistic, relu
+
 
 def eval_nn(nn, imgs, labels, maximum = 0):
     # Compute the confusion matrix
@@ -48,15 +53,13 @@ def train_nn(nn, dataset, args):
 
         nn.backward(inputs, errors)
         nn.update_parameters(args.learning_rate)
-
-        if contor % 10 == 0:
-            nn.zero_gradients()
+        nn.zero_gradients()
 
 
         # Evaluate the network
         if contor % args.eval_every == 0:
-            train_acc, train_cm = eval_nn(nn, dataset["train_images"], dataset["train_one_of_ks"], 5000)
-            test_acc, test_cm = eval_nn(nn, dataset["test_images"], dataset["test_one_of_ks"], 5000)
+            train_acc, train_cm = eval_nn(nn, dataset["train_images"], dataset["train_one_of_ks"], 1000)
+            test_acc, test_cm = eval_nn(nn, dataset["test_images"], dataset["test_one_of_ks"])
 
             print("Train acc: %2.6f ; Test acc: %2.6f" % (train_acc, test_acc))
 
@@ -68,7 +71,7 @@ if __name__ == "__main__":
     parser.add_argument("--eval_every", type = int, default = 200,
                         help="Learning rate")
 
-    parser.add_argument("--total_train", type = int, default = 5000)
+    parser.add_argument("--total_train", type = int, default = 50000)
 
     parser.add_argument("--dataset", type = int, default = 1,
                         help="Dataset")
@@ -79,9 +82,23 @@ if __name__ == "__main__":
     dataset = import_first_dataset() if args.dataset == 1 else import_second_dataset()
     # nn = FeedForward([LinearizeLayer(32, 32, 3), FullyConnected(32*32*3, 300, identity), Tanh(), FullyConnected(300, 10, identity), SoftMax()])
 
-    nn = FeedForward([LinearizeLayer(32, 32, 3), FullyConnected(32*32*3, 300, identity), Tanh(), FullyConnected(300, 10, identity), SoftMax()])
+    # nn = FeedForward([LinearizeLayer(32, 32, 3), FullyConnected(32*32*3, 300, identity), Tanh(), FullyConnected(300, 10, identity), SoftMax()])
 
-    nn = FeedForward([ConvolutionalLayer(3, 32, 32, 3, 8, 1), ReluLayer(), LinearizeLayer(3, 25, 25), FullyConnected(3 * 25 * 25, 10, logistic)])
+    # nn = FeedForward([ConvolutionalLayer(3, 32, 32, 3, 5, 1), ReluLayer(), MaxPoolingLayer(2),
+    #     ConvolutionalLayer(3, 14, 14, 4, 3, 1), ReluLayer(), MaxPoolingLayer(2),
+    #     LinearizeLayer(4, 6, 6), FullyConnected(4 * 6 * 6, 10, identity)])
+
+    nn = FeedForward([
+        ConvolutionalLayer(3, 32, 32, 6, 5, 1),
+        MaxPoolingLayer(2),
+        ReluLayer(),
+        ConvolutionalLayer(6, 14, 14, 16, 5, 1),
+        MaxPoolingLayer(2),
+        ReluLayer(),
+        LinearizeLayer(16, 5, 5),
+        FullyConnected(400, 300, relu),
+        FullyConnected(300, 10, relu),
+        SoftMax()])
 
     # nn = FeedForward([LinearizeLayer(32, 32, 3), FullyConnected(32*32*3, 10, logistic), Tanh(), SoftMax()])
 

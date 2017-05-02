@@ -45,13 +45,12 @@ class ConvolutionalLayer(LayerInterface):
     def forward(self, inputs):
         # assert(inputs.shape == (self.inputs_height, self.inputs_width, self.inputs_depth))
         # inputs = np.swapaxes(inputs, 0, 2)
-        print inputs.shape
+        # print inputs.shape
 
-        print 'Weights', self.weights.shape
+        # print 'Weights', self.weights.shape
 
         self.X_col, self.X_col_indices = m_im2col(inputs, (self.k, self.k))
-        # print X_col
-        # print X_col.shape
+
         W_row = self.weights.reshape((self.outputs_depth, self.k * self.k * self.inputs_depth))
         res = np.dot(W_row, self.X_col) + self.biases
         self.outputs = res.reshape((self.outputs_depth, self.outputs_height, self.outputs_width))
@@ -62,82 +61,16 @@ class ConvolutionalLayer(LayerInterface):
         d_o, l_o, c_o = output_errors.shape
         self.g_biases += output_errors.sum(axis=(1,2)).reshape(d_o, 1)
 
-        dout_reshaped = output_errors.`nspose(1, 2, 0).reshape(self.outputs_depth, -1)
-        # W_grad = np.dot(dout_reshaped, self.X_col.T)
-        # self.g_weights = W_grad.reshape(self.weights.shape)
-        #######
+        dout_reshaped = output_errors.reshape(self.outputs_depth, -1)
+        W_grad = np.dot(dout_reshaped, self.X_col.T)
+        self.g_weights = W_grad.reshape(self.weights.shape)
 
-        d, l, c = inputs.shape
-        d_o, l_o, c_o = output_errors.shape
+        W_reshape = self.weights.reshape(self.outputs_depth, -1)
+        dx_col = np.dot(W_reshape.T, dout_reshaped)
+        dx = col2im(dx_col, inputs.shape, self.X_col_indices)
 
-            # TODO (4.b.ii)
-        # Compute the gradients w.r.t. the weights (self.g_weights)
-        for n in range(d_o):
-            for m in range(d):
-                for p in range(self.k):
-                    for q in range(self.k):
-                        for i in range(l_o):
-                            for j in range(c_o):
-                                self.g_weights[n][m][p][q] += inputs[m][i * self.stride + p][j * self.stride + q] * output_errors[n][i][j]
+        return dx
 
-        # W_reshape = self.weights.reshape(self.outputs_depth, -1)
-        # dx_col = np.dot(W_reshape.T, dout_reshaped)
-        # #print dx_col.shape
-        # dx = col2im(dx_col.T, inputs.shape, self.X_col_indices)
-        # return dx
-
-        # TODO (4.b.iii)
-        # Compute and return the gradients w.r.t the inputs of this layer
-        result = np.zeros((d, l, c))
-        for m in range(d):
-            for i in range(l):
-                for j in range(c):
-                    for n in range(d_o):
-                        for p in range(self.k):
-                            for q in range(self.k):
-                                ii = int((i - p) / self.stride)
-                                jj = int((j - q) / self.stride)
-                                if ii < l_o and jj < c_o and ii >= 0 and jj >= 0:
-                                    result[m][i][j] += self.weights[n][m][p][q] * output_errors[n][ii][jj]
-
-        # return result
-
-
-    # def backward(self, inputs, output_errors):
-    #     assert(output_errors.shape == (self.outputs_depth, self.outputs_height, self.outputs_width))
-
-    #     d, l, c = inputs.shape
-    #     d_o, l_o, c_o = output_errors.shape
-
-    #     # TODO (4.b.i)
-    #     # Compute the gradients w.r.t. the bias terms (self.g_biases)
-    #     self.g_biases += output_errors.sum(axis=(1,2)).reshape(d_o, 1)
-
-    #     # TODO (4.b.ii)
-    #     # Compute the gradients w.r.t. the weights (self.g_weights)
-    #     for n in range(d_o):
-    #         for m in range(d):
-    #             for p in range(self.k):
-    #                 for q in range(self.k):
-    #                     for i in range(l_o):
-    #                         for j in range(c_o):
-    #                             self.g_weights[n][m][p][q] += inputs[m][i * self.stride + p][j * self.stride + q] * output_errors[n][i][j]
-
-    #     # TODO (4.b.iii)
-    #     # Compute and return the gradients w.r.t the inputs of this layer
-    #     result = np.zeros((d, l, c))
-    #     for m in range(d):
-    #         for i in range(l):
-    #             for j in range(c):
-    #                 for n in range(d_o):
-    #                     for p in range(self.k):
-    #                         for q in range(self.k):
-    #                             ii = int((i - p) / self.stride)
-    #                             jj = int((j - q) / self.stride)
-    #                             if ii < l_o and jj < c_o and ii >= 0 and jj >= 0:
-    #                                 result[m][i][j] += self.weights[n][m][p][q] * output_errors[n][ii][jj]
-
-        # return result
 
     def update_parameters(self, learning_rate):
         self.biases -= self.g_biases * learning_rate
@@ -175,7 +108,6 @@ def test_convolutional_layer():
 
     # x = np.arange(3*32*32).reshape(32, 32, 3)
     # x = np.arange(3*3*3).reshape(3, 3, 3)
-    print x
 
     print("Testing forward computation...")
     output = l.forward(x)
@@ -231,7 +163,7 @@ def test_convolutional_layer():
    [ 24.18501955, 25.36006196]]]]
     )
 
-    print l.g_weights
+    # print l.g_weights
     assert (l.g_weights.shape == gweights_target.shape), "Wrong size"
     assert close_enough(l.g_weights, gweights_target), "Wrong values"
     print("     OK")
@@ -247,7 +179,7 @@ def test_convolutional_layer():
   [ 0.96613275, 1.97814629, 2.12435555, 0.97276618],
   [ 1.26778987, 1.01822369, 1.45453542, 0.45243098]]]
     )
-
+    print g
     assert (g.shape == in_target.shape), "Wrong size"
     assert close_enough(g, in_target), "Wrong values in input gradients"
     print("     OK")

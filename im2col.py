@@ -25,13 +25,13 @@ def im2col_sliding_broadcasting(A, BSZ, stepsize=1):
 def im2col(image, block_size):
 
     # height sa fie 3 !!!
-    print image.shape
+    # print image.shape
     rows, cols, height = image.shape
     horz_blocks = cols - block_size[1] + 1
     vert_blocks = rows - block_size[0] + 1
 
-    print horz_blocks
-    print vert_blocks
+    # print horz_blocks
+    # print vert_blocks
 
     output_vectors = np.zeros((block_size[0] * block_size[1]* height, horz_blocks * vert_blocks))
     itr = 0
@@ -61,34 +61,28 @@ def m_im2col(A, size, stepsize=1):
     # print(didx)
 
     start_idx=(didx[:,None]+start_idx.ravel()).reshape((-1,B[0],B[1]))
-    print 'start_idx'
-    print(start_idx.ravel())
+    # print 'start_idx'
+    # print(start_idx.ravel())
 
     # Get offsetted indices across the height and width of input array
     offset_idx = np.arange(row_extent)[:,None]*N + np.arange(col_extent)
-    print 'offset_idx'
-    print(offset_idx.ravel()[:,None])
-    print 'Output indeces'
+    # print 'offset_idx'
+    # print(offset_idx.ravel()[:,None])
+    # print 'Output indeces'
     indices = (offset_idx.ravel()[:,None] + start_idx.ravel()).T
-    print indices
+    # print indices
 
     # Get all actual indices & index into input array for final output
-    print 'Output values'
+    # print 'Output values'
     output = np.take(A, indices)
 
     return output, indices
 
-# def col2im(input, original_shape, original_indecses):
-#     output = np.zeros(original_shape)
-#     x, y = original_indecses.shape
-#     for i in xrange(x):
-#       np.put(output, original_indecses[i], input[i])
 
-#     return output
 
 def col2im(input, original_shape, original_indecses):
-    output = np.zeros(original_shape)
-    np.put(output, original_indecses.ravel(), input.ravel())
+    output = np.zeros(original_shape).flatten()
+    np.add.at(output, original_indecses.flatten(), input.flatten())
     return output.reshape(original_shape)
 
 

@@ -3,6 +3,8 @@ import numpy as np
 from layer_interface import LayerInterface
 from time import sleep
 
+np.seterr(over='raise')
+
 class FullyConnected(LayerInterface):
     """docstring for Full"""
     def __init__(self, inputs_no, outputs_no, transfer_function):
@@ -65,6 +67,7 @@ class FullyConnected(LayerInterface):
 
     def update_parameters(self, learning_rate):
         self.biases -= self.g_biases * learning_rate
+        # print self.g_weights
         self.weights -= self.g_weights * learning_rate
 
     def zero_gradients(self):

@@ -88,7 +88,6 @@ def import_first_dataset():
     else:
         train_images, train_one_of_ks, test_images, test_one_of_ks = load_data(1)
 
-    print train_one_of_ks
     images_standardization(train_images, test_images)
 
     dataset['train_images'] = train_images

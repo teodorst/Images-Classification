@@ -9,8 +9,8 @@ class MaxPoolingLayer(LayerInterface):
         # Dimensions: stride
         self.stride = stride
 
-        # indexes of max activations
-        self.switches = {}
+        # # indexes of max activations
+        # self.switches = {}
 
     def forward(self, inputs):
         (d, w, h) = inputs.shape
