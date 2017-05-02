@@ -14,6 +14,9 @@ class LayerInterface:
     def update_parameters(self, learning_rate):
         pass
 
+    def zero_gradients(self):
+        pass
+
     def to_string(self):
         pass
 

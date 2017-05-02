@@ -69,15 +69,27 @@ def m_im2col(A, size, stepsize=1):
     print 'offset_idx'
     print(offset_idx.ravel()[:,None])
     print 'Output indeces'
-    output = offset_idx.ravel()[:,None] + start_idx.ravel()
-    print output
+    indices = (offset_idx.ravel()[:,None] + start_idx.ravel()).T
+    print indices
 
     # Get all actual indices & index into input array for final output
     print 'Output values'
-    output = np.take(A, output)
-    print output
+    output = np.take(A, indices)
 
-    return output
+    return output, indices
+
+# def col2im(input, original_shape, original_indecses):
+#     output = np.zeros(original_shape)
+#     x, y = original_indecses.shape
+#     for i in xrange(x):
+#       np.put(output, original_indecses[i], input[i])
+
+#     return output
+
+def col2im(input, original_shape, original_indecses):
+    output = np.zeros(original_shape)
+    np.put(output, original_indecses.ravel(), input.ravel())
+    return output.reshape(original_shape)
 
 
 # def m_im2col(image, BSZ):

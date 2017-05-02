@@ -21,7 +21,7 @@ class SoftMax(LayerInterface):
         return self.outputs
 
     def backward(self, inputs, output_errors):
-        Z  = np.sum(np.multiply(output_errors, inputs))
+        Z  = np.sum(np.multiply(output_errors, self.outputs))
         # print output_errors.shape
         deltax = np.multiply(self.outputs, output_errors - Z)
         # print deltax.shape

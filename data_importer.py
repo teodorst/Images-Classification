@@ -37,21 +37,13 @@ def unpickle(file):
 
 def import_image(index, images, tags):
     tag_index = images['labels'][index]
-    image_pixels = images['data'][index]
-    image = np.empty((32, 32, 3), dtype='uint8')
-    for row in xrange(32):
-        for col in xrange(32):
-            images_pixels_pos = row * 32 + col
-            image[row][col][0] = image_pixels[images_pixels_pos+RED_POS]
-            image[row][col][1] = image_pixels[images_pixels_pos+GREEN_POS]
-            image[row][col][2] = image_pixels[images_pixels_pos+BLUE_POS]
+    image = images['data'][index].reshape((3, 32, 32))
 
     tag = tags[tag_index]
     one_of_k = np.zeros((10, 1))
     one_of_k[tag_index] = 1
     image = np.array(image, dtype='float64')
     return image, tag, one_of_k
-
 
 def import_first_dataset():
     train_images = []

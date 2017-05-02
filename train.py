@@ -49,10 +49,15 @@ def train_nn(nn, dataset, args):
         nn.backward(inputs, errors)
         nn.update_parameters(args.learning_rate)
 
+        if contor % 10 == 0:
+            nn.zero_gradients()
+
+
         # Evaluate the network
         if contor % args.eval_every == 0:
-            test_acc, test_cm = eval_nn(nn, dataset["test_images"], dataset["test_one_of_ks"])
-            train_acc, train_cm = eval_nn(nn, dataset["train_images"], dataset["test_one_of_ks"], 5000)
+            train_acc, train_cm = eval_nn(nn, dataset["train_images"], dataset["train_one_of_ks"], 5000)
+            test_acc, test_cm = eval_nn(nn, dataset["test_images"], dataset["test_one_of_ks"], 5000)
+
             print("Train acc: %2.6f ; Test acc: %2.6f" % (train_acc, test_acc))
 
 if __name__ == "__main__":
@@ -74,10 +79,11 @@ if __name__ == "__main__":
     dataset = import_first_dataset() if args.dataset == 1 else import_second_dataset()
     # nn = FeedForward([LinearizeLayer(32, 32, 3), FullyConnected(32*32*3, 300, identity), Tanh(), FullyConnected(300, 10, identity), SoftMax()])
 
-    nn = FeedForward([LinearizeLayer(32, 32, 3), FullyConnected(32*32*3, 300, logistic), Tanh(), FullyConnected(300, 10, logistic)])
+    nn = FeedForward([LinearizeLayer(32, 32, 3), FullyConnected(32*32*3, 300, identity), Tanh(), FullyConnected(300, 10, identity), SoftMax()])
+
+    nn = FeedForward([ConvolutionalLayer(3, 32, 32, 3, 8, 1), ReluLayer(), LinearizeLayer(3, 25, 25), FullyConnected(3 * 25 * 25, 10, logistic)])
 
     # nn = FeedForward([LinearizeLayer(32, 32, 3), FullyConnected(32*32*3, 10, logistic), Tanh(), SoftMax()])
-
 
     # print nn.to_string()
 

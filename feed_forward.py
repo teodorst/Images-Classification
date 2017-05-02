@@ -31,9 +31,12 @@ class FeedForward:
         self.layers[0].backward(inputs, crt_error)
 
     def update_parameters(self, learning_rate):
-        # TODO (3)
         for layer in self.layers:
             layer.update_parameters(learning_rate)
+
+    def zero_gradients(self):
+        for layer in self.layers:
+            layer.zero_gradients()
 
     def to_string(self):
         return " -> ".join(map(lambda l: l.to_string(), self.layers))
