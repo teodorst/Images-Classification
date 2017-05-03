@@ -22,5 +22,5 @@ class Tanh(LayerInterface):
         # print np.multiply(1 - np.multiply(self.outputs, self.outputs), output_errors).shape
         return np.multiply(1 - np.multiply(self.outputs, self.outputs), output_errors)
 
-    def update_parameters(self, learning_rate):
+    def update_parameters(self, learning_rate, momentum):
         pass

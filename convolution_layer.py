@@ -1,10 +1,7 @@
 import numpy as np
 
 from layer_interface import LayerInterface
-from im2col import im2col, m_im2col, col2im
-
-def my_flatten(x, y):
-    return x.flatten()
+from im2col import m_im2col, col2im, col2im_good2, my_im2col
 
 class ConvolutionalLayer(LayerInterface):
 
@@ -41,6 +38,8 @@ class ConvolutionalLayer(LayerInterface):
         # Gradients
         self.g_weights = np.zeros(self.weights.shape)
         self.g_biases = np.zeros(self.biases.shape)
+        self.v_weights = np.zeros(self.weights.shape)
+        self.v_biases = np.zeros(self.biases.shape)
 
     def forward(self, inputs):
         # assert(inputs.shape == (self.inputs_height, self.inputs_width, self.inputs_depth))
@@ -71,8 +70,13 @@ class ConvolutionalLayer(LayerInterface):
 
         return dx
 
+    def update_parameters(self, learning_rate, momentum):
+        # self.v_biases = momentum * self.v_biases + self.g_biases * learning_rate
+        # self.v_weights = momentum * self.v_weights - self.g_weights * learning_rate
+        # self.weights += self.v_weights
+        # self.biases -= self.v_biases
+        # # print self.g_weights
 
-    def update_parameters(self, learning_rate):
         self.biases -= self.g_biases * learning_rate
         self.weights -= self.g_weights * learning_rate
 
@@ -80,6 +84,8 @@ class ConvolutionalLayer(LayerInterface):
         # Gradients
         self.g_weights = np.zeros(self.weights.shape)
         self.g_biases = np.zeros(self.biases.shape)
+        self.v_weights = np.zeros(self.weights.shape)
+        self.v_biases = np.zeros(self.biases.shape)
 
 
 
@@ -186,6 +192,15 @@ def test_convolutional_layer():
 
     print("Backward computation implemented ok!")
 
+    x = np.arange(32*32*3).reshape(3, 32, 32)
+
+    xcol1 = my_im2col(x, (2, 2))
+    vf1 = col2im_good2(xcol1, (2, 2), x.shape)
+
+    xcol2, xcol_ind = m_im2col(x, (2, 2))
+    vf2 = col2im(xcol2, x.shape, self.xcol_ind)
+
+    print vf1 == vf2
 
 if __name__ == "__main__":
     test_convolutional_layer()

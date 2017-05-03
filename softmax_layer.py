@@ -10,6 +10,7 @@ class SoftMax(LayerInterface):
         pass
 
     def forward(self, x):
+        # print x
         exk = np.exp(x)
         exk_sum = np.sum(exk)
         self.outputs = exk / exk_sum
@@ -21,5 +22,5 @@ class SoftMax(LayerInterface):
         return deltax
 
 
-    def update_parameters(self, learning_rate):
+    def update_parameters(self, learning_rate, momentum):
         pass

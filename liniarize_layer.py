@@ -21,7 +21,7 @@ class LinearizeLayer(LayerInterface):
     def backward(self, inputs, output_errors):
         return np.reshape(np.array(output_errors), (self.height, self.width, self.depth))
 
-    def update_paramters(self, learning_rate):
+    def update_paramters(self, learning_rate, momentum):
         pass
 
     def to_string(self):
@@ -41,7 +41,7 @@ class LinearizeLayerReverse(LayerInterface):
     def backward(self, inputs, output_errors):
         return np.matrix(output_errors.flatten()).T
 
-    def update_paramters(self, learning_rate):
+    def update_paramters(self, learning_rate, momentum):
         pass
 
     def to_string(self):

@@ -32,41 +32,41 @@ def eval_nn(nn, imgs, labels, maximum = 0):
 def train_nn(nn, dataset, args):
     contor = 0
     train_len = len(dataset['train_images'])
-    print 'TRain len', train_len
+
+    momentum_step = float((0.99 - args.momentum)) / train_len
+
+    print 'Train len', train_len
+    indeces = [i for i in xrange(train_len)]
     for i in xrange(args.total_train):
-        img_index = random.randint(0, train_len-1)
+        img_index = random.choice(indeces)
+        indeces.remove(img_index)
         contor += 1
         inputs = dataset["train_images"][img_index]
         targets = dataset["train_one_of_ks"][img_index]
 
         outputs = nn.forward(inputs)
-        # print 'After forward'
+
         targets = np.reshape(targets, (10, 1))
 
         errors = outputs - targets
-        # print outputs.shape
-        # print targets.shape
-        # print errors
-        # print errors.shape
-
-        # print 'Before backward'
 
         nn.backward(inputs, errors)
-        nn.update_parameters(args.learning_rate)
-        nn.zero_gradients()
-
+        nn.update_parameters(args.learning_rate, args.momentum + i * momentum_step)
 
         # Evaluate the network
         if contor % args.eval_every == 0:
             train_acc, train_cm = eval_nn(nn, dataset["train_images"], dataset["train_one_of_ks"], 1000)
             test_acc, test_cm = eval_nn(nn, dataset["test_images"], dataset["test_one_of_ks"])
-
+            nn.zero_gradients()
             print("Train acc: %2.6f ; Test acc: %2.6f" % (train_acc, test_acc))
 
 if __name__ == "__main__":
     parser = ArgumentParser()
     parser.add_argument("--learning_rate", type = float, default = 0.001,
                         help="Learning rate")
+
+    parser.add_argument("--momentum", type = float, default = 0.9,
+                        help="Momentum")
 
     parser.add_argument("--eval_every", type = int, default = 200,
                         help="Learning rate")

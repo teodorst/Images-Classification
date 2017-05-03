@@ -22,28 +22,6 @@ def im2col_sliding_broadcasting(A, BSZ, stepsize=1):
     return np.take (A,start_idx.ravel()[:,None] + offset_idx.ravel()[::stepsize])
 
 
-def im2col(image, block_size):
-
-    # height sa fie 3 !!!
-    # print image.shape
-    rows, cols, height = image.shape
-    horz_blocks = cols - block_size[1] + 1
-    vert_blocks = rows - block_size[0] + 1
-
-    # print horz_blocks
-    # print vert_blocks
-
-    output_vectors = np.zeros((block_size[0] * block_size[1]* height, horz_blocks * vert_blocks))
-    itr = 0
-    for v_b in xrange(vert_blocks):
-        for h_b in xrange(horz_blocks):
-
-            #image[v_b: v_b + block_size[0], h_b: h_b + block_size[1]].ravel()
-            output_vectors[:, itr] = image[v_b: v_b + block_size[0], h_b: h_b + block_size[1]].ravel()
-            itr += 1
-
-    return output_vectors
-
 def m_im2col(A, size, stepsize=1):
     B = size
     skip = [1,1]
@@ -79,12 +57,64 @@ def m_im2col(A, size, stepsize=1):
     return output, indices
 
 
-
 def col2im(input, original_shape, original_indecses):
     output = np.zeros(original_shape).flatten()
     np.add.at(output, original_indecses.flatten(), input.flatten())
     return output.reshape(original_shape)
 
+
+
+
+def my_im2col(image, filter_size, stride = 1):
+    depth, height, width = image.shape
+
+    block_height = (height - filter_size[0]) / stride + 1
+    block_width = (width - filter_size[1]) / stride + 1
+
+    #print image.shape
+    #print block_height, block_width
+    #print filter_size
+
+    index = 0
+    output = np.zeros((filter_size[0] * filter_size[1] * depth, block_height * block_width))
+    for h in range(0, block_height, stride):
+      for w in range(0, block_width, stride):
+        pixel_block = image[:, h : h + filter_size[0], w : w + filter_size[1]]
+        output[:, index] = pixel_block.ravel()
+        index += 1
+
+    return output, None
+
+def col2im_good2(im2col_mat, bsz, img_sz, stride = 1):
+
+    b_rows, b_cols = bsz
+
+    img_depth, img_rows, img_cols = img_sz
+    # if img_depth != 3:
+    #     print "Eroare prostule"
+    #     return None
+    img = np.zeros((img_depth, img_rows, img_cols))
+
+    start_idx = []
+    for row in range(0, img_rows - b_rows + 1, 1):
+        for col in range(0, img_cols - b_cols + 1, 1):
+            if row % stride == 0 and col % stride == 0:
+                start_idx.append((row, col))
+
+    print start_idx
+    im2col_mat_row = 0
+    for s_idx in start_idx:
+        row, col = s_idx
+
+        im2col_mat_col = 0
+        for br in range(b_rows):
+            for bc in range(b_cols):
+                for crt_depth in range(img_depth):
+                    img[crt_depth][row+br][col+bc] = im2col_mat[im2col_mat_row]\
+                            [im2col_mat_col + b_cols*b_rows * crt_depth]
+                im2col_mat_col += 1
+        im2col_mat_row += 1
+    return img
 
 # def m_im2col(image, BSZ):
   # # x = np.arange(0, 4*4*3)

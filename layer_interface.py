@@ -11,7 +11,7 @@ class LayerInterface:
     def backward(self, inputs, output_errors):
         return None
 
-    def update_parameters(self, learning_rate):
+    def update_parameters(self, learning_rate, momentum):
         pass
 
     def zero_gradients(self):
