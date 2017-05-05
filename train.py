@@ -88,36 +88,31 @@ if __name__ == "__main__":
     nn = FeedForward([LinearizeLayer(32, 32, 3), FullyConnected(32*32*3, 300, identity), Tanh(), FullyConnected(300, 200, identity), Tanh(), FullyConnected(200, 10, identity), SoftMax()])
 
     # # Convolutional I
-    # nn = FeedForward([
-    #     ConvolutionalLayer(3, 32, 32, 6, 5, 1),
-    #     MaxPoolingLayer(2),
-    #     ReluLayer(),
-    #     ConvolutionalLayer(6, 14, 14, 16, 5, 1),
-    #     MaxPoolingLayer(2),
-    #     ReluLayer(),
-    #     LinearizeLayer(16, 5, 5),
-    #     FullyConnected(400, 300, relu),
-    #     FullyConnected(300, 10, identity),
-    #     SoftMax()])
-
-    # Convolutional II
     nn = FeedForward([
         ConvolutionalLayer(3, 32, 32, 6, 5, 1),
-        ReluLayer(),
-        ConvolutionalLayer(6, 28, 28, 16, 5, 1),
-        ReluLayer(),
-        ConvolutionalLayer(16, 24, 24, 20, 5, 1),
         MaxPoolingLayer(2),
         ReluLayer(),
-        LinearizeLayer(20, 10, 10),
-        FullyConnected(2000, 100, logistic),
-        FullyConnected(100, 10, identity),
+        ConvolutionalLayer(6, 14, 14, 16, 5, 1),
+        MaxPoolingLayer(2),
+        ReluLayer(),
+        LinearizeLayer(16, 5, 5),
+        FullyConnected(400, 300, relu),
+        FullyConnected(300, 10, relu),
         SoftMax()])
 
-
-    # nn = FeedForward([LinearizeLayer(32, 32, 3), FullyConnected(32*32*3, 10, logistic), Tanh(), SoftMax()])
-
-    # print nn.to_string()
+    # Convolutional II
+    # nn = FeedForward([
+    #     ConvolutionalLayer(3, 32, 32, 6, 5, 1),
+    #     ReluLayer(),
+    #     ConvolutionalLayer(6, 28, 28, 16, 5, 1),
+    #     ReluLayer(),
+    #     ConvolutionalLayer(16, 24, 24, 20, 5, 1),
+    #     MaxPoolingLayer(2),
+    #     ReluLayer(),
+    #     LinearizeLayer(20, 10, 10),
+    #     FullyConnected(2000, 100, logistic),
+    #     FullyConnected(100, 10, identity),
+    #     SoftMax()])
 
     train_nn(nn, dataset, args)
 

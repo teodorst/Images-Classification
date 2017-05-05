@@ -11,15 +11,9 @@ class Tanh(LayerInterface):
 
     def forward(self, inputs):
         self.outputs = tanh(inputs)
-
-        # print 'Tanh Forward'
-        # print self.outputs
-        # sleep(1)
         return self.outputs
 
     def backward(self, inputs, output_errors):
-        # print output_errors.shape
-        # print np.multiply(1 - np.multiply(self.outputs, self.outputs), output_errors).shape
         return np.multiply(1 - np.multiply(self.outputs, self.outputs), output_errors)
 
     def update_parameters(self, learning_rate, momentum):

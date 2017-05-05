@@ -26,18 +26,3 @@ def relu(x, derivate=False):
         return np.vectorize(relu_deriv, otypes=[np.float])(x)
     return np.vectorize(relu_def, otypes=[np.float])(x)
 
-
-# def relu(x, derivate=False):
-#     # TODO 2
-#     return_val = []
-#     if not derivate:
-#         for y in x:
-#             return_val.append(max(y, 0))
-#     else:
-#         for y in x:
-#             if y > 0:
-#                 return_val.append(1)
-#             else:
-#                 return_val.append(0)
-
-#     return np.array(return_val)

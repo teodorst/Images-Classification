@@ -13,9 +13,6 @@ class LinearizeLayer(LayerInterface):
 
     def forward(self, inputs):
         self.outputs = np.matrix(inputs.flatten()).T
-        # print 'Liniarized Forward'
-        # print self.outputs
-        # sleep(1)
         return self.outputs
 
     def backward(self, inputs, output_errors):

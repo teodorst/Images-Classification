@@ -18,8 +18,8 @@ class SoftMax(LayerInterface):
 
     def backward(self, inputs, output_errors):
         Z  = np.sum(np.multiply(output_errors, self.outputs))
-        deltax = np.multiply(self.outputs, output_errors - Z)
-        return deltax
+        dx = np.multiply(self.outputs, output_errors - Z)
+        return dx
 
 
     def update_parameters(self, learning_rate, momentum):
