@@ -1,7 +1,7 @@
 import numpy as np
 
 from layer_interface import LayerInterface
-from im2col import m_im2col, col2im, col2im_good2, my_im2col
+from im2col import im2col, col2im
 
 class ConvolutionalLayer(LayerInterface):
 
@@ -20,7 +20,7 @@ class ConvolutionalLayer(LayerInterface):
         self.outputs_width = int((self.inputs_width - self.k) / self.stride + 1)
 
 
-        # Layer's parameters
+        # Layer's parameters Xavier method
         self.weights = np.random.normal(
             0,
             np.sqrt(2.0 / float(self.outputs_depth + self.inputs_depth + self.k + self.k)),
@@ -39,36 +39,33 @@ class ConvolutionalLayer(LayerInterface):
         self.g_weights = np.zeros(self.weights.shape)
         self.g_biases = np.zeros(self.biases.shape)
         self.v_weights = np.zeros(self.weights.shape)
-        self.v_biases = np.zeros(self.biases.shape)
 
     def forward(self, inputs):
-        # assert(inputs.shape == (self.inputs_height, self.inputs_width, self.inputs_depth))
-        # inputs = np.swapaxes(inputs, 0, 2)
-        # print inputs.shape
+        assert(inputs.shape == (self.inputs_depth, self.inputs_height, self.inputs_width))
 
-        # print 'Weights', self.weights.shape
-
-        self.X_col, self.X_col_indices = m_im2col(inputs, (self.k, self.k))
-
+        self.X_col, self.X_col_indices = im2col(inputs, (self.k, self.k), self.stride)
         W_row = self.weights.reshape((self.outputs_depth, self.k * self.k * self.inputs_depth))
-        res = np.dot(W_row, self.X_col) + self.biases
+        res = np.dot(W_row, self.X_col.T) + self.biases
         self.outputs = res.reshape((self.outputs_depth, self.outputs_height, self.outputs_width))
+
         return self.outputs
 
     def backward(self, inputs, output_errors):
 
-        d_o, l_o, c_o = output_errors.shape
-        self.g_biases += output_errors.sum(axis=(1,2)).reshape(d_o, 1)
+        # Biases gradients
+        self.g_biases += output_errors.sum(axis=(1,2)).reshape(output_errors.shape[0], 1)
 
-        dout_reshaped = output_errors.reshape(self.outputs_depth, -1)
-        W_grad = np.dot(dout_reshaped, self.X_col.T)
-        self.g_weights = W_grad.reshape(self.weights.shape)
+        # Weights gradients
+        erros_reshaped = output_errors.reshape(self.outputs_depth, -1)
+        self.g_weights = np.dot(erros_reshaped, self.X_col)
+        self.g_weights = self.g_weights.reshape(self.weights.shape)
 
-        W_reshape = self.weights.reshape(self.outputs_depth, -1)
-        dx_col = np.dot(W_reshape.T, dout_reshaped)
-        dx = col2im(dx_col, inputs.shape, self.X_col_indices)
+        # Inputs gradients
+        W_reshaped = self.weights.reshape(self.outputs_depth, -1)
+        g_input_col = np.dot(W_reshaped.T, erros_reshaped)
+        g_input = col2im(g_input_col, inputs.shape, self.X_col_indices.T)
 
-        return dx
+        return g_input
 
     def update_parameters(self, learning_rate, momentum):
         # self.v_biases = momentum * self.v_biases + self.g_biases * learning_rate
@@ -192,15 +189,6 @@ def test_convolutional_layer():
 
     print("Backward computation implemented ok!")
 
-    x = np.arange(32*32*3).reshape(3, 32, 32)
-
-    xcol1 = my_im2col(x, (2, 2))
-    vf1 = col2im_good2(xcol1, (2, 2), x.shape)
-
-    xcol2, xcol_ind = m_im2col(x, (2, 2))
-    vf2 = col2im(xcol2, x.shape, self.xcol_ind)
-
-    print vf1 == vf2
 
 if __name__ == "__main__":
     test_convolutional_layer()

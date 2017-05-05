@@ -76,7 +76,6 @@ def import_first_dataset():
             img, tag, one_of_k = import_image(i, dates, dataset['classes'])
             test_images.append(img)
             test_one_of_ks.append(one_of_k)
-            # test_tags.append(tag)
 
         train_images = np.array(train_images)
         train_one_of_ks = np.array(train_one_of_ks)
@@ -122,11 +121,11 @@ def import_second_dataset():
                 train_images_no = int(len(files) * 0.7)
 
                 for image_index, image_file in enumerate(files):
-                    # print image_file
                     image = load_image(os.path.join(class_path, image_file))
                     image_array = image_resize(image)
                     one_of_ks = np.zeros(SECOND_DATASET_NUMBER_OF_CLASSES)
                     one_of_ks[class_index] = 1
+
                     if image_index < train_images_no:
                         train_images.append(image_array)
                         train_one_of_ks.append(one_of_ks)
@@ -134,10 +133,10 @@ def import_second_dataset():
                         test_images.append(image_array)
                         test_one_of_ks.append(one_of_ks)
 
-        train_images = np.array(test_images)
-        train_one_of_ks = np.array(test_images)
-        test_images = np.array(test_images)
-        test_one_of_ks = np.array(test_images)
+        train_images = np.transpose(np.array(train_images), (0, 3, 1, 2))
+        train_one_of_ks = np.array(train_one_of_ks)
+        test_images = np.transpose(np.array(test_images), (0, 3, 1, 2))
+        test_one_of_ks = np.array(test_one_of_ks)
 
         # Write to files
         save_data(train_images, train_one_of_ks, test_images, test_one_of_ks, 2)
@@ -191,7 +190,6 @@ def save_data(train_images, train_one_of_ks, test_images, test_one_of_ks, datase
         print "Wrong dataset number"
         sys.exit(1)
 
-
 def images_standardization(train_images, test_images):
     avg = np.mean(train_images)
     dev = np.std(train_images)
@@ -210,5 +208,5 @@ def load_image(image_path):
     return Image.open(image_path)
 
 if __name__ == '__main__':
-    import_first_dataset()
-    # import_second_dataset()
+    # import_first_dataset()
+    import_second_dataset()

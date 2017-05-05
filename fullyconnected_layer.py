@@ -37,9 +37,6 @@ class FullyConnected(LayerInterface):
         assert(inputs.shape == (self.inputs_no, 1))
         self.a = np.dot(self.weights, inputs) + self.biases
         self.outputs = self.f(self.a)
-        # print 'Fully Connected Forward'
-        # print self.outputs
-        # sleep(1)
         return self.outputs
 
 
@@ -48,9 +45,6 @@ class FullyConnected(LayerInterface):
 
         z = inputs
         fd = self.f(z, True)
-        # print 'FD SHAPE', fd.shape
-        # print 'WEIGHTS T SHAPE', self.weights.T.shape
-        # print 'MULT SHAPE:', np.dot(self.weights.T, output_errors).shape
         delta = np.multiply(np.dot(self.weights.T, output_errors), fd)
 
         self.g_biases = output_errors
@@ -65,25 +59,17 @@ class FullyConnected(LayerInterface):
 
 
     def update_parameters(self, learning_rate, momentum):
-        # self.v_biases = momentum * self.v_biases + self.g_biases * learning_rate
-        # self.v_weights = momentum * self.v_weights + self.g_weights * learning_rate
-        # self.biases -= self.v_biases
-        # # print self.g_weights
-        # self.weights -= self.v_weights
-
+        # self.v_weights = momentum * self.v_weights - self.g_weights * learning_rate
         self.biases -= self.g_biases * learning_rate
         self.weights -= self.g_weights * learning_rate
-        # self.v_weights = momentum * self.v_weights - self.g_weights * learning_rate
         # self.weights += self.v_weights
-        # self.biases -= self.g_biases * learning_rate
 
 
     def zero_gradients(self):
         # Gradients
         self.g_weights = np.zeros((self.outputs_no, self.inputs_no))
         self.g_biases = np.zeros((self.outputs_no, 1))
-        self.v_biases = np.zeros((self.outputs_no, 1))
-        self.v_weights = np.zeros((self.outputs_no, self.inputs_no))
+        # self.v_weights = np.zeros((self.outputs_no, self.inputs_no))
 
     def to_string(self):
         return "[FC (%s -> %s)]" % (self.inputs_no, self.outputs_no)

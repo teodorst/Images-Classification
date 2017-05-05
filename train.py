@@ -33,13 +33,13 @@ def train_nn(nn, dataset, args):
     contor = 0
     train_len = len(dataset['train_images'])
 
-    momentum_step = float((0.99 - args.momentum)) / train_len
+    momentum_step = float((args.momentum - 0.5)) / train_len
 
     print 'Train len', train_len
-    indeces = [i for i in xrange(train_len)]
-    for i in xrange(args.total_train):
-        img_index = random.choice(indeces)
-        indeces.remove(img_index)
+    indices = [i for i in xrange(train_len)]
+    for i in xrange(train_len):
+        img_index = random.choice(indices)
+        indices.remove(img_index)
         contor += 1
         inputs = dataset["train_images"][img_index]
         targets = dataset["train_one_of_ks"][img_index]
@@ -51,7 +51,7 @@ def train_nn(nn, dataset, args):
         errors = outputs - targets
 
         nn.backward(inputs, errors)
-        nn.update_parameters(args.learning_rate, args.momentum + i * momentum_step)
+        nn.update_parameters(args.learning_rate, 0.5 + i * momentum_step)
 
         # Evaluate the network
         if contor % args.eval_every == 0:
@@ -80,25 +80,40 @@ if __name__ == "__main__":
     input_size = (32, 32, 3)
 
     dataset = import_first_dataset() if args.dataset == 1 else import_second_dataset()
-    # nn = FeedForward([LinearizeLayer(32, 32, 3), FullyConnected(32*32*3, 300, identity), Tanh(), FullyConnected(300, 10, identity), SoftMax()])
 
-    # nn = FeedForward([LinearizeLayer(32, 32, 3), FullyConnected(32*32*3, 300, identity), Tanh(), FullyConnected(300, 10, identity), SoftMax()])
+    # Liniarize I
+    # nn = FeedForward([LinearizeLayer(3, 32, 32), FullyConnected(3*32*32, 300, identity), Tanh(), FullyConnected(300, 10, identity), SoftMax()])
 
-    # nn = FeedForward([ConvolutionalLayer(3, 32, 32, 3, 5, 1), ReluLayer(), MaxPoolingLayer(2),
-    #     ConvolutionalLayer(3, 14, 14, 4, 3, 1), ReluLayer(), MaxPoolingLayer(2),
-    #     LinearizeLayer(4, 6, 6), FullyConnected(4 * 6 * 6, 10, identity)])
+    # Liniarize II
+    nn = FeedForward([LinearizeLayer(32, 32, 3), FullyConnected(32*32*3, 300, identity), Tanh(), FullyConnected(300, 200, identity), Tanh(), FullyConnected(200, 10, identity), SoftMax()])
 
+    # # Convolutional I
+    # nn = FeedForward([
+    #     ConvolutionalLayer(3, 32, 32, 6, 5, 1),
+    #     MaxPoolingLayer(2),
+    #     ReluLayer(),
+    #     ConvolutionalLayer(6, 14, 14, 16, 5, 1),
+    #     MaxPoolingLayer(2),
+    #     ReluLayer(),
+    #     LinearizeLayer(16, 5, 5),
+    #     FullyConnected(400, 300, relu),
+    #     FullyConnected(300, 10, identity),
+    #     SoftMax()])
+
+    # Convolutional II
     nn = FeedForward([
         ConvolutionalLayer(3, 32, 32, 6, 5, 1),
+        ReluLayer(),
+        ConvolutionalLayer(6, 28, 28, 16, 5, 1),
+        ReluLayer(),
+        ConvolutionalLayer(16, 24, 24, 20, 5, 1),
         MaxPoolingLayer(2),
         ReluLayer(),
-        ConvolutionalLayer(6, 14, 14, 16, 5, 1),
-        MaxPoolingLayer(2),
-        ReluLayer(),
-        LinearizeLayer(16, 5, 5),
-        FullyConnected(400, 300, relu),
-        FullyConnected(300, 10, relu),
+        LinearizeLayer(20, 10, 10),
+        FullyConnected(2000, 100, logistic),
+        FullyConnected(100, 10, identity),
         SoftMax()])
+
 
     # nn = FeedForward([LinearizeLayer(32, 32, 3), FullyConnected(32*32*3, 10, logistic), Tanh(), SoftMax()])
 
